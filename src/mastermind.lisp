@@ -1,3 +1,6 @@
+(defparameter *max-pegs* 4)
+(defparameter *max-colors* 6)
+
 (defun matches (secret guess)
   (cond
     ((null secret) 0)
@@ -27,3 +30,39 @@
 
 (defun match (secret guess)
   (list (matches secret guess) (misplaced secret guess)))
+
+(defun key (codeword)
+  (defun key-acc (n codeword)
+    (cond
+      ((null codeword) n)
+      (t (key-acc (+ (* 10 n) (car codeword)) (cdr codeword)))))
+  (key-acc 0 codeword))
+
+(defun make-set ()
+  ())
+
+(defun insert-key (key set)
+  (setf set (adjoin key set)))
+
+(defun keys (set)
+        (sort set #'<))
+
+
+(defun number-to-key (n)
+  (defun number-to-key-i (i n)
+    (cond ((= 0 i) 0)
+          (t (multiple-value-bind (q r) (floor n *max-colors*)
+               (+ (* 10 (number-to-key-i (- i 1) q)) (1+ r))))))
+  (number-to-key-i *max-pegs* n))
+
+(defun key-to-codeword (key)
+  (defun key-to-codeword-i (i k cw)
+    (cond ((= 0 i) cw)
+          (t (multiple-value-bind (q r) (floor k 10)
+               (key-to-codeword-i (- i 1) q (cons r cw))))))
+  (key-to-codeword-i *max-pegs* key ()))
+
+(defun all-keys ()
+  (loop for i
+        from 0 to (- (expt *max-colors* *max-pegs*) 1)
+        collect (number-to-key i)))
