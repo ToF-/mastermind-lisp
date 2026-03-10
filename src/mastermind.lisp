@@ -1,5 +1,6 @@
 (defparameter *max-pegs* 4)
 (defparameter *max-colors* 6)
+(defparameter *results* '(04 03 02 01 00 13 12 11 10 22 21 20 31 30 40))
 
 (defun matches (secret guess)
   (cond
@@ -73,25 +74,14 @@
 (defun make-result-table ()
   (let ((results (make-hash-table)))
     (progn
-      (setf (gethash 04 results) 0)
-      (setf (gethash 03 results) 0)
-      (setf (gethash 02 results) 0)
-      (setf (gethash 01 results) 0)
-      (setf (gethash 13 results) 0)
-      (setf (gethash 12 results) 0)
-      (setf (gethash 11 results) 0)
-      (setf (gethash 10 results) 0)
-      (setf (gethash 22 results) 0)
-      (setf (gethash 21 results) 0)
-      (setf (gethash 20 results) 0)
-      (setf (gethash 31 results) 0)
-      (setf (gethash 30 results) 0)
-      (setf (gethash 40 results) 0)
+      (mapcar #'(lambda (r) (setf (gethash r results) 0)) *results*)
       results)))
 
 (defun increment-result (result results)
   (let ((n (gethash result results)))
-    (setf (gethash result results) (1+ n))))
+    (progn
+      (setf (gethash result results) (1+ n))
+      results)))
 
 (defun match-result-stats (codeword codewords)
   (defun increment-match-result-stats (codeword codewords results)
@@ -99,5 +89,10 @@
           (t (let ((result (result-to-key
                              (match (key-to-codeword codeword)
                                     (key-to-codeword (car codewords))))))
-               (increment-result result results)))))
-  (increment-match-result-stats codeword codewords (make-result-table)))
+               (progn
+                 (increment-match-result-stats codeword (cdr codewords) (increment-result result results)))))))
+  (let ((table (make-result-table)))
+    (increment-match-result-stats codeword codewords table)))
+
+(defun max-result-stats (stats)
+  (apply #'max (mapcar #'(lambda (x) (gethash x stats)) *results*)))

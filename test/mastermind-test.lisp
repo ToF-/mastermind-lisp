@@ -46,4 +46,11 @@
              (assert-equal 1296 (length (all-keys))))
 
 (define-test match-result-stats
-             (assert-equal 0 (gethash (number-to-key '(4 0)) (match-result-stats 1122 (all-keys)))))
+             (let ((stats (match-result-stats 1122 (all-keys))))
+               (assert-equal 256 (gethash 0 stats))
+               (assert-equal 1 (gethash 40 stats))
+               (assert-equal 0 (gethash 31 stats))
+               ))
+
+(define-test max-match-result-stats
+             (assert-equal 256 (max-result-stats (match-result-stats 1122 (all-keys)))))
