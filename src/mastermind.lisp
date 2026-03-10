@@ -66,3 +66,38 @@
   (loop for i
         from 0 to (- (expt *max-colors* *max-pegs*) 1)
         collect (number-to-key i)))
+
+(defun result-to-key (result)
+  (+ (* 10 (car result)) (cadr result)))
+
+(defun make-result-table ()
+  (let ((results (make-hash-table)))
+    (progn
+      (setf (gethash 04 results) 0)
+      (setf (gethash 03 results) 0)
+      (setf (gethash 02 results) 0)
+      (setf (gethash 01 results) 0)
+      (setf (gethash 13 results) 0)
+      (setf (gethash 12 results) 0)
+      (setf (gethash 11 results) 0)
+      (setf (gethash 10 results) 0)
+      (setf (gethash 22 results) 0)
+      (setf (gethash 21 results) 0)
+      (setf (gethash 20 results) 0)
+      (setf (gethash 31 results) 0)
+      (setf (gethash 30 results) 0)
+      (setf (gethash 40 results) 0)
+      results)))
+
+(defun increment-result (result results)
+  (let ((n (gethash result results)))
+    (setf (gethash result results) (1+ n))))
+
+(defun match-result-stats (codeword codewords)
+  (defun increment-match-result-stats (codeword codewords results)
+    (cond ((null codewords) results)
+          (t (let ((result (result-to-key
+                             (match (key-to-codeword codeword)
+                                    (key-to-codeword (car codewords))))))
+               (increment-result result results)))))
+  (increment-match-result-stats codeword codewords (make-result-table)))

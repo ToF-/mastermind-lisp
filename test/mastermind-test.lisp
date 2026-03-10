@@ -40,7 +40,10 @@
 
 (define-test key-to-codeword
              (assert-equal '(1 3 6 2) (key-to-codeword 1362))
-             (assert-equal '(6 6 2 4) (key-to-codeword 6624))
+             (assert-equal '(6 6 2 4) (key-to-codeword 6624)))
 
 (define-test all-keys
              (assert-equal 1296 (length (all-keys))))
+
+(define-test match-result-stats
+             (assert-equal 0 (gethash (number-to-key '(4 0)) (match-result-stats 1122 (all-keys)))))
