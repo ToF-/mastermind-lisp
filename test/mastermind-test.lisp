@@ -54,3 +54,16 @@
 
 (define-test max-match-result-stats
              (assert-equal 256 (max-result-stats (match-result-stats 1122 (all-keys)))))
+
+(define-test filter-result
+             (let* ((result-key (result-key-match 1122 3632))
+                    (selection (filter-result 10 1122 (all-keys))))
+               (assert-equal 256 (length selection))))
+             
+
+(define-test minmax-match-result-stats
+             (assert-equal '(1122 256) (minmax-match-result-stats (all-keys))))
+
+(define-test result-key-match
+             (assert-equal 10 (result-key-match 1122 3632)))
+

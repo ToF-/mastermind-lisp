@@ -96,3 +96,39 @@
 
 (defun max-result-stats (stats)
   (apply #'max (mapcar #'(lambda (x) (gethash x stats)) *results*)))
+
+(defun minmax-match-result-stats (codewords)
+  (defun minmax-match-result-stats-acc (minimum candidates codewords)
+    (cond ((null candidates) minimum)
+          (t
+            (let ((score (max-result-stats (match-result-stats (car candidates) codewords)))
+                  (current-score (cadr minimum)))
+                (if (< score current-score)
+                  (minmax-match-result-stats-acc
+                    (list (car candidates) score) (cdr candidates) codewords)
+                  (minmax-match-result-stats-acc
+                    minimum (cdr candidates) codewords))))))
+    (minmax-match-result-stats-acc (list 0 10000) codewords codewords))
+
+(defun result-key-match (secret guess)
+  (result-to-key (match (key-to-codeword secret) (key-to-codeword guess))))
+
+(defun filter-result (result-key codeword codewords)
+  (remove-if #'(lambda (x)
+                 (not (eq (result-key-match codeword x) result-key)))
+             codewords))
+
+(defun guess-secret (secret)
+  (defun guess-secret-acc (counter candidates)
+    (let* ((minimum (minmax-match-result-stats candidates))
+           (codeword (car minimum))
+           (result (result-key-match codeword secret)))
+      (progn
+        (format t "~A) ~A : ~A ~A ~%" counter codeword (result-key-match codeword secret) minimum)
+        (if (> counter 5)
+          (format t "I can't~%")
+          (if (eq 40 result)
+            (format t "done~%")
+            (guess-secret-acc (1+ counter) (filter-result result codeword candidates)))))))
+  (guess-secret-acc 1 (all-keys)))
+
