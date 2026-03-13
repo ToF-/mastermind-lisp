@@ -1,6 +1,13 @@
 (defparameter *max-pegs* 4)
 (defparameter *max-colors* 6)
-(defparameter *results* '(04 03 02 01 00 13 12 11 10 22 21 20 31 30 40))
+
+(defun possible-results (nb-pegs)
+  (apply #'append
+         (loop for b from 0 to nb-pegs
+               collect (loop for w from 0 to (- nb-pegs b)
+                             collect (+ (* 10 b) (- (- nb-pegs b) w))))))
+
+(defparameter *results* (possible-results *max-pegs*))
 
 (defun matches (secret guess)
   (cond
@@ -48,11 +55,6 @@
 (defun keys (set)
         (sort set #'<))
 
-(defun all-possible-results (nb-pegs)
-  (apply #'append
-    (loop for b from 0 to nb-pegs
-        collect (loop for w from 0 to (- nb-pegs b)
-                     collect (+ (* 10 b) (- (- nb-pegs b) w))))))
 
 (defun show-result (result)
   (cond ((eq 0 result) "__")
@@ -117,7 +119,7 @@
     (increment-match-result-stats codeword codewords table)))
 
 (defun max-result-stats (stats)
-  (apply #'max (mapcar #'(lambda (x) (gethash x stats)) (all-possible-results *max-pegs*))))
+  (apply #'max (mapcar #'(lambda (x) (gethash x stats)) *results*)))
 
 (defun minmax-match-result-stats (codewords)
   (defun minmax-match-result-stats-acc (minimum candidates codewords)
