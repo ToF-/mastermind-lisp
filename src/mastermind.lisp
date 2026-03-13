@@ -48,6 +48,12 @@
 (defun keys (set)
         (sort set #'<))
 
+(defun all-possible-results (nb-pegs)
+  (apply #'append
+    (loop for b from 0 to nb-pegs
+        collect (loop for w from 0 to (- nb-pegs b)
+                     collect (+ (* 10 b) (- (- nb-pegs b) w))))))
+
 (defun show-result (result)
   (cond ((eq 0 result) "__")
         ((eq 1 result) "○")
@@ -111,7 +117,7 @@
     (increment-match-result-stats codeword codewords table)))
 
 (defun max-result-stats (stats)
-  (apply #'max (mapcar #'(lambda (x) (gethash x stats)) *results*)))
+  (apply #'max (mapcar #'(lambda (x) (gethash x stats)) (all-possible-results *max-pegs*))))
 
 (defun minmax-match-result-stats (codewords)
   (defun minmax-match-result-stats-acc (minimum candidates codewords)

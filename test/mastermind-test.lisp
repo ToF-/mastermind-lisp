@@ -45,6 +45,10 @@
 (define-test all-keys
              (assert-equal 1296 (length (all-keys))))
 
+(define-test all-possible-results
+             (assert-equal '(03 02 01 00 12 11 10 21 20 30) (all-possible-results 3))
+             (assert-equal '(04 03 02 01 00 13 12 11 10 22 21 20 31 30 40) (all-possible-results 4)))
+
 (define-test match-result-stats
              (let ((stats (match-result-stats 1122 (all-keys))))
                (assert-equal 256 (gethash 0 stats))
@@ -62,7 +66,7 @@
              
 
 (define-test minmax-match-result-stats
-             (assert-equal '(1122 256) (minmax-match-result-stats (all-keys))))
+             (assert-equal '(1122 2560) (minmax-match-result-stats (all-keys))))
 
 (define-test result-key-match
              (assert-equal 10 (result-key-match 1122 3632)))
