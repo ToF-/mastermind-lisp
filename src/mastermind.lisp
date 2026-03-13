@@ -117,7 +117,9 @@
   (defun minmax-match-result-stats-acc (minimum candidates codewords)
     (cond ((null candidates) minimum)
           (t
-            (let ((score (max-result-stats (match-result-stats (car candidates) codewords)))
+            (let ((score (+ (* 10 (max-result-stats (match-result-stats (car candidates) codewords)))
+                            (if (null (member (car candidates) codewords)) 1 0)))
+
                   (current-score (cadr minimum)))
               (if (< score current-score)
                 (progn
@@ -128,7 +130,7 @@
                   minimum (cdr candidates) codewords))))))
   (progn
     (format t "~A~%" codewords)
-    (minmax-match-result-stats-acc (list 0 10000) codewords codewords)))
+    (minmax-match-result-stats-acc (list 0 10000) (all-keys) codewords)))
 
 (defun result-key-match (secret guess)
   (result-to-key (match (key-to-codeword secret) (key-to-codeword guess))))
@@ -150,9 +152,9 @@
           (if (eq 40 result)
             (format t "found in ~A guesses~%" counter)
             (guess-secret-acc (1+ counter) (filter-result result codeword candidates)))))))
-    (let* ((codeword 1122)
-           (result (result-key-match codeword secret)))
-      (progn
-        (format t "~A) ~A : ~A~%" 1 1122 (show-result result))
-        (guess-secret-acc 2 (filter-result result 1122 (all-keys))))))
+  (let* ((codeword 1122)
+         (result (result-key-match codeword secret)))
+    (progn
+      (format t "~A) ~A : ~A~%" 1 1122 (show-result result))
+      (guess-secret-acc 2 (filter-result result 1122 (all-keys))))))
 
