@@ -128,15 +128,11 @@
 
                   (current-score (cadr minimum)))
               (if (< score current-score)
-                (progn
-                  (format t "~A:~A~%" (car candidates) score)
                   (minmax-match-result-stats-acc
-                    (list (car candidates) score) (cdr candidates) codewords))
+                    (list (car candidates) score) (cdr candidates) codewords)
                 (minmax-match-result-stats-acc
                   minimum (cdr candidates) codewords))))))
-  (progn
-    (format t "~A~%" codewords)
-    (minmax-match-result-stats-acc (list 0 10000) (all-keys) codewords)))
+    (minmax-match-result-stats-acc (list 0 10000) (all-keys) codewords))
 
 (defun result-key-match (secret guess)
   (result-to-key (match (key-to-codeword secret) (key-to-codeword guess))))
