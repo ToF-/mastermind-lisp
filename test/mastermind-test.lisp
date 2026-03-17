@@ -15,9 +15,9 @@
             (assert-equal 4 (misplaced '(1 1 2 2) '(2 2 1 1))))
 
 (define-test match
-             (assert-equal '(1 1) (match '(1 2 3 4) '(6 2 1 5)))
-             (assert-equal '(4 0) (match '(1 2 3 4) '(1 2 3 4)))
-             (assert-equal '(0 4) (match '(4 3 2 1) '(1 2 3 4))))
+             (assert-equal 11 (match '(1 2 3 4) '(6 2 1 5)))
+             (assert-equal 40 (match '(1 2 3 4) '(1 2 3 4)))
+             (assert-equal 04 (match '(4 3 2 1) '(1 2 3 4))))
 
 (define-test key
             (assert-equal 4621 (key '(4 6 2 1)))
@@ -60,14 +60,10 @@
              (assert-equal 256 (max-result-stats (match-result-stats 1122 (all-keys)))))
 
 (define-test filter-result
-             (let* ((result-key (result-key-match 1122 3632))
-                    (selection (filter-result 10 1122 (all-keys))))
+             (let ((selection (filter-result 10 1122 (all-keys))))
                (assert-equal 256 (length selection))))
              
 
 (define-test minmax-match-result-stats
              (assert-equal '(1122 2560) (minmax-match-result-stats (all-keys))))
-
-(define-test result-key-match
-             (assert-equal 10 (result-key-match 1122 3632)))
 

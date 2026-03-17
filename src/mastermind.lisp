@@ -42,7 +42,7 @@
 
 ; the result eg (0 1), (2 1),…,(4 0) of matching secret and guess codewords
 (defun match (secret guess)
-  (list (matches secret guess) (misplaced secret guess)))
+  (+ (* 10 (matches secret guess)) (misplaced secret guess)))
 
 
 (defun key (codeword)
@@ -109,9 +109,8 @@
   (labels 
     ((increment-match-result-stats (codeword codewords results)
                                    (cond ((null codewords) results)
-                                         (t (let ((result (result-to-key
-                                                            (match (key-to-codeword codeword)
-                                                                   (key-to-codeword (car codewords))))))
+                                         (t (let ((result (match (key-to-codeword codeword)
+                                                                   (key-to-codeword (car codewords)))))
                                                 (increment-match-result-stats codeword (cdr codewords) (increment-result result results)))))))
      (let ((table (make-result-table)))
        (increment-match-result-stats codeword codewords table))))
@@ -135,18 +134,16 @@
     (minmax-match-result-stats-acc (list 0 10000) (all-keys) codewords))
 
 (defun result-key-match (secret guess)
-  (result-to-key (match (key-to-codeword secret) (key-to-codeword guess))))
+  (match (key-to-codeword secret) (key-to-codeword guess)))
 
-(defun filter-result (result-key codeword codewords)
-  (remove-if #'(lambda (x)
-                 (not (eq (result-key-match codeword x) result-key)))
-             codewords))
+(defun filter-result (result codeword codewords)
+  (remove-if #'(lambda (x) (not (eq (result-key-match codeword x) result))) codewords))
 
 (defun guess-secret (secret)
   (defun guess-secret-acc (counter candidates)
     (let* ((minimum (minmax-match-result-stats candidates))
            (codeword (car minimum))
-           (result (result-key-match codeword secret)))
+           (result (match codeword secret)))
       (progn
         (format t "~A) ~A : ~A~%" counter codeword (show-result result))
         (if (> counter 5)
@@ -155,7 +152,7 @@
             (format t "found in ~A guesses~%" counter)
             (guess-secret-acc (1+ counter) (filter-result result codeword candidates)))))))
   (let* ((codeword 1122)
-         (result (result-key-match codeword secret)))
+         (result (match codeword secret)))
     (progn
       (format t "~A) ~A : ~A~%" 1 1122 (show-result result))
       (guess-secret-acc 2 (filter-result result 1122 (all-keys))))))
