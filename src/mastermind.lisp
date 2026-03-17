@@ -40,7 +40,7 @@
 (defun misplaced (secret guess)
     (- (hits secret guess) (matches secret guess)))
 
-; the result eg (0 1), (2 1),…,(4 0) of matching secret and guess codewords
+; the result eg 01,…,21,…,40 of matching secret and guess codewords
 (defun match (secret guess)
   (+ (* 10 (matches secret guess)) (misplaced secret guess)))
 
@@ -140,20 +140,20 @@
   (remove-if #'(lambda (x) (not (eq (result-key-match codeword x) result))) codewords))
 
 (defun guess-secret (secret)
-  (defun guess-secret-acc (counter candidates)
-    (let* ((minimum (minmax-match-result-stats candidates))
-           (codeword (car minimum))
-           (result (match codeword secret)))
+  (labels
+    ((guess-secret-acc (counter candidates)
+                       (let* ((minimum (minmax-match-result-stats candidates))
+                              (codeword (car minimum))
+                              (result (result-key-match codeword secret)))
+                         (progn
+                           (format t "~A) ~A : ~A~%" counter codeword (show-result result))
+                           (cond 
+                             ((> counter 5) (format t "I can't in 5 guesses~%"))
+                             ((eq 40 result) (format t "found in ~A guesses~%" counter))
+                             (t (guess-secret-acc (1+ counter) (filter-result result codeword candidates))))))))
+    (let* ((codeword 1122)
+           (result (result-key-match codeword secret)))
       (progn
-        (format t "~A) ~A : ~A~%" counter codeword (show-result result))
-        (if (> counter 5)
-          (format t "I can't in 5 guesses~%")
-          (if (eq 40 result)
-            (format t "found in ~A guesses~%" counter)
-            (guess-secret-acc (1+ counter) (filter-result result codeword candidates)))))))
-  (let* ((codeword 1122)
-         (result (match codeword secret)))
-    (progn
-      (format t "~A) ~A : ~A~%" 1 1122 (show-result result))
-      (guess-secret-acc 2 (filter-result result 1122 (all-keys))))))
+        (format t "~A) ~A : ~A~%" 1 1122 (show-result result))
+        (guess-secret-acc 2 (filter-result result 1122 (all-keys)))))))
 
