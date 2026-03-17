@@ -9,35 +9,41 @@
 
 (defparameter *results* (possible-results *max-pegs*))
 
+; the number of matching pegs (same color and position) between secret and guess codewords
 (defun matches (secret guess)
   (cond
     ((null secret) 0)
     ((= (car secret) (car guess)) (1+ (matches (cdr secret) (cdr guess))))
     (t (matches (cdr secret) (cdr guess)))))
 
-(defun counter (n codeword)
-  (cond
-    ((null codeword) 0)
-    ((= n (car codeword)) (1+ (counter n (cdr codeword))))
-    (t (counter n (cdr codeword)))))
-
-(defun all-counter (codeword)
-  (loop for i from 1 to 10 collect (counter i codeword)))
-
-(defun hit-counter (secret-counter guess-counter)
-  (cond
-    ((null secret-counter) 0)
-    (t (+ (min (car secret-counter) (car guess-counter))
-          (hit-counter (cdr secret-counter) (cdr guess-counter))))))
-
+; the number of matching pegs (same color, position indifferent) between secret and guess codewords
 (defun hits (secret guess)
-  (hit-counter (all-counter secret) (all-counter guess)))
+  (labels
+    ((color-count (color codeword)
+                  (cond
+                    ((null codeword) 0)
+                    ((= color (car codeword)) (1+ (color-count color (cdr codeword))))
+                    (t (color-count color (cdr codeword)))))
+     (all-color-counts (codeword)
+                       (loop for color from 1 to *max-colors*
+                             collect (color-count color codeword)))
+     (hit-count (secret-counts guess-counts)
+                (cond
+                  ((null secret-counts) 0)
+                  (t (+ 
+                       (min (car secret-counts) (car guess-counts))
+                       (hit-count (cdr secret-counts) (cdr guess-counts)))))))
 
+    (hit-count (all-color-counts secret) (all-color-counts guess))))
+
+; the number of misplaced pegs (same color, wrong position) between secret and guess codewords
 (defun misplaced (secret guess)
     (- (hits secret guess) (matches secret guess)))
 
+; the result eg (0 1), (2 1),…,(4 0) of matching secret and guess codewords
 (defun match (secret guess)
   (list (matches secret guess) (misplaced secret guess)))
+
 
 (defun key (codeword)
   (defun key-acc (n codeword)
@@ -87,11 +93,11 @@
 (defun result-to-key (result)
   (+ (* 10 (car result)) (cadr result)))
 
+; make a hash table where each result is a key to a score
 (defun make-result-table ()
-  (let ((results (make-hash-table)))
-    (progn
-      (mapcar #'(lambda (r) (setf (gethash r results) 0)) *results*)
-      results)))
+  (let ((table (make-hash-table)))
+      (mapcar #'(lambda (r) (setf (gethash r table) 0)) *results*)
+      table))
 
 (defun increment-result (result results)
   (let ((n (gethash result results)))
@@ -100,15 +106,15 @@
       results)))
 
 (defun match-result-stats (codeword codewords)
-  (defun increment-match-result-stats (codeword codewords results)
-    (cond ((null codewords) results)
-          (t (let ((result (result-to-key
-                             (match (key-to-codeword codeword)
-                                    (key-to-codeword (car codewords))))))
-               (progn
-                 (increment-match-result-stats codeword (cdr codewords) (increment-result result results)))))))
-  (let ((table (make-result-table)))
-    (increment-match-result-stats codeword codewords table)))
+  (labels 
+    ((increment-match-result-stats (codeword codewords results)
+                                   (cond ((null codewords) results)
+                                         (t (let ((result (result-to-key
+                                                            (match (key-to-codeword codeword)
+                                                                   (key-to-codeword (car codewords))))))
+                                                (increment-match-result-stats codeword (cdr codewords) (increment-result result results)))))))
+     (let ((table (make-result-table)))
+       (increment-match-result-stats codeword codewords table))))
 
 (defun max-result-stats (stats)
   (apply #'max (mapcar #'(lambda (x) (gethash x stats)) *results*)))
