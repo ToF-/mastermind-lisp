@@ -78,12 +78,12 @@
                (+ (* 10 (number-to-key-i (- i 1) q)) (1+ r))))))
   (number-to-key-i *max-pegs* n))
 
-(defun key-to-codeword (key)
-  (defun key-to-codeword-i (i k cw)
+(defun codeword (key)
+  (defun codeword-i (i k cw)
     (cond ((= 0 i) cw)
           (t (multiple-value-bind (q r) (floor k 10)
-               (key-to-codeword-i (- i 1) q (cons r cw))))))
-  (key-to-codeword-i *max-pegs* key ()))
+               (codeword-i (- i 1) q (cons r cw))))))
+  (codeword-i *max-pegs* key ()))
 
 (defun all-keys ()
   (loop for i
@@ -109,8 +109,8 @@
   (labels 
     ((increment-match-result-stats (codeword codewords results)
                                    (cond ((null codewords) results)
-                                         (t (let ((result (match (key-to-codeword codeword)
-                                                                   (key-to-codeword (car codewords)))))
+                                         (t (let ((result (match (codeword codeword)
+                                                                   (codeword (car codewords)))))
                                                 (increment-match-result-stats codeword (cdr codewords) (increment-result result results)))))))
      (let ((table (make-result-table)))
        (increment-match-result-stats codeword codewords table))))
@@ -133,26 +133,26 @@
                   minimum (cdr candidates) codewords))))))
     (minmax-match-result-stats-acc (list 0 10000) (all-keys) codewords))
 
-(defun result-key-match (secret guess)
-  (match (key-to-codeword secret) (key-to-codeword guess)))
+(defun match-codewords (secret guess)
+  (match (codeword secret) (codeword guess)))
 
 (defun filter-result (result codeword codewords)
-  (remove-if #'(lambda (x) (not (eq (result-key-match codeword x) result))) codewords))
+  (remove-if #'(lambda (x) (not (eq (match-codewords codeword x) result))) codewords))
 
 (defun guess-secret (secret)
   (labels
     ((guess-secret-acc (counter candidates)
                        (let* ((minimum (minmax-match-result-stats candidates))
-                              (codeword (car minimum))
-                              (result (result-key-match codeword secret)))
+                              (guess (car minimum))
+                              (result (match-codewords guess secret)))
                          (progn
-                           (format t "~A) ~A : ~A~%" counter codeword (show-result result))
+                           (format t "~A) ~A : ~A~%" counter guess (show-result result))
                            (cond 
                              ((> counter 5) (format t "I can't in 5 guesses~%"))
                              ((eq 40 result) (format t "found in ~A guesses~%" counter))
-                             (t (guess-secret-acc (1+ counter) (filter-result result codeword candidates))))))))
-    (let* ((codeword 1122)
-           (result (result-key-match codeword secret)))
+                             (t (guess-secret-acc (1+ counter) (filter-result result guess candidates))))))))
+    (let* ((guess 1122)
+           (result (match-codewords guess secret)))
       (progn
         (format t "~A) ~A : ~A~%" 1 1122 (show-result result))
         (guess-secret-acc 2 (filter-result result 1122 (all-keys)))))))

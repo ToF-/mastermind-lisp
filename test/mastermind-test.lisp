@@ -38,9 +38,9 @@
              (assert-equal 1121 (number-to-key 6))
              (assert-equal 6666 (number-to-key 1295)))
 
-(define-test key-to-codeword
-             (assert-equal '(1 3 6 2) (key-to-codeword 1362))
-             (assert-equal '(6 6 2 4) (key-to-codeword 6624)))
+(define-test codeword
+             (assert-equal '(1 3 6 2) (codeword 1362))
+             (assert-equal '(6 6 2 4) (codeword 6624)))
 
 (define-test all-keys
              (assert-equal 1296 (length (all-keys))))
